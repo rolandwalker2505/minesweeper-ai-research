@@ -4,9 +4,9 @@ import time
 
 from minesweeper import Minesweeper, MinesweeperAI
 
-HEIGHT = 8
-WIDTH = 8
-MINES = 8
+HEIGHT = 3
+WIDTH = 3
+MINES = 1
 
 # Colors
 BLACK = (0, 0, 0)
@@ -180,10 +180,18 @@ while True:
 
         #TODO: COI KĨ CÁI NÀY:
         # If AI button clicked, make an AI move
+
         if aiButton.collidepoint(mouse) and not lost:
-            move = ai.make_safe_move()
+            move = ai.make_safe_move()          # Lúc đầu không đi qua đây do con agent chưa có thông tin về vị trí an toàn (ai.safes)
+
             if move is None:
+                """
+                    Ban đầu, AI không có thông tin gì. Cơ sở tri thức self.knowledge rỗng. 
+                    Do đó, nước đi đầu tiên luôn là một lựa chọn ngẫu nhiên từ tất cả các ô trên bảng, 
+                    được thực hiện bởi hàm make_random_move().
+                """
                 move = ai.make_random_move()
+
                 if move is None:
                     flags = ai.mines.copy()
                     print("No moves left to make.")
@@ -191,6 +199,7 @@ while True:
                     print("No known safe moves, AI making random move.")
             else:
                 print("AI making safe move.")
+
             # Added Code to Update Flags in RealTime
             for ai_mine in ai.getFlags():
                 flags.add(ai_mine)

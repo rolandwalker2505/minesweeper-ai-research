@@ -5,28 +5,39 @@ import random
 class Minesweeper():
     """
     Minesweeper game representation
+
+    Minesweeper nó là bàn cờ và người quản trò chơi này.
+    Lớp này đóng vai trò là bộ máy của trò chơi (Game Engine).
+    Nó chịu trách nhiệm thiết lập và quản lý trạng thái thực của bàn cờ.
     """
 
     def __init__(self, height=8, width=8, mines=8):
 
         # Set initial width, height, and number of mines
+
+        """
+            - self.height với self.width nó là kích thước của bàn cờ được tạo ra
+            - self.mines ở đây là một tập hợp (set) chứa tọa độ của tất cả các quả mìn thực sự trên bàn cờ.
+                Nó là "đáp án" của ván game. Nó là thông tin mật mà chỉ có người quản trò (lớp Minesweeper) biết.
+                Dùng để kiểm tra xem một nước đi có trúng mìn hay không.
+        """
         self.height = height
         self.width = width
         self.mines = set()
 
-        # Initialize an empty field with no mines
-        self.board = []
+        # Initialize an empty field with no mines - all FALSE - Bắt đầu với bàn cờ trống
+        self.board = []                                     # nơi giá trị True đại diện cho một quả mìn hoặc False là không
         for i in range(self.height):
             row = []
             for j in range(self.width):
                 row.append(False)
             self.board.append(row)
 
-        # Add mines randomly
+        # Add mines randomly - Đặt 8 mìn vị trí ngẫu nhiên trong bàn cờ
         while len(self.mines) != mines:
             i = random.randrange(height)
             j = random.randrange(width)
-            if not self.board[i][j]:
+            if not self.board[i][j]:                        # Ô đó không phải là Mìn thì đặt mìn ngẫu nhiên chỗ đó
                 self.mines.add((i, j))
                 self.board[i][j] = True
 
@@ -66,7 +77,7 @@ class Minesweeper():
         for i in range(cell[0] - 1, cell[0] + 2):
             for j in range(cell[1] - 1, cell[1] + 2):
 
-                # Ignore the cell itself
+                # Ignore the cell itself - Bỏ qua ô chính nó
                 if (i, j) == cell:
                     continue
 
@@ -92,8 +103,8 @@ class Sentence():
     """
 
     def __init__(self, cells, count):
-        self.cells = set(cells)
-        self.count = count
+        self.cells = set(cells)                 # Chứa các cells, loại bỏ các cells trùng lặp
+        self.count = count                      # Lưu trữ số lượng bom
 
     def __eq__(self, other):
         return self.cells == other.cells and self.count == other.count
@@ -105,7 +116,7 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be mines.
         """
-        if len(self.cells) == self.count:
+        if len(self.cells) == self.count:       # Nếu một vùng có N ô và có N quả bom thì mọi ô trong đó đều là bom
             return self.cells
         return None
 
@@ -113,7 +124,7 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be safe.
         """
-        if self.count == 0:
+        if self.count == 0:                     # Nếu một vùng không có bom nào thì mọi ô trong đó đều an toàn
             return self.cells
         return None
 
@@ -136,31 +147,50 @@ class Sentence():
 
 
 #TODO: COI KĨ CÁI NÀY
-
+# LUỒNG HOẠT ĐỘNG: HÀNH ĐỘNG -> THU NHẬP THÔNG TIN -> SUY LUẬN -> HÀNH ĐỘNG MỚI
 class MinesweeperAI():
     """
     Minesweeper game player
+    Ku này nó là người chơi
     """
 
     def __init__(self, height=8, width=8):
 
         # Set initial height and width
+        """
+        Đây là thông tin về kích thước bàn cờ mà AI cần biết để có thể suy luận một cách chính xác
+        (ví dụ: để biết một ô có nằm ngoài rìa hay không khi tìm các ô lân cận).
+        """
         self.height = height
         self.width = width
 
         # Keep track of which cells have been clicked on
-        self.moves_made = set()
+        self.moves_made = set()                             # Chứa các lần bấm nút AI di chuyển
         self.all_possible_cells = set()
         for h in range(height):
             for w in range(width):
                 self.all_possible_cells.add((h,w))
 
         # Keep track of cells known to be safe or mines
-        self.mines = set()
-        self.safes = set()                                  # chưa có nước đi an toàn nào
+
+        """
+            Hai tập mines và safes là hai tập kết luận cuối cùng. Khi con agent này nó chắc
+            chắn một ô nào đó là mìn hoặc là an toàn thì nó sẽ được thêm vào 1 trong 2 set
+            để truy xuất nhanh hơn.
+        """
+
+        self.mines = set()                                  # Set cứa các ô mà con agent biết chắc chắn là bom thông qua cơ sở tri thức (self.knowledge),
+                                                                # Dùng để AI tránh đi vào những ô này và để giúp nó suy luận ra các ô an toàn khác - Chưa có mìn nào
+
+        self.safes = set()                                  # Set chứa các ô biết là an toàn nhưng chưa có bấm nút di chuyển - Chưa có nước đi an toàn nào
 
         # List of sentences about the game known to be true
-        self.knowledge = []                                 # chưa có mệnh đề nào
+
+        """
+        Cơ sở tri thức - Knowledge Base (KB) là đây, trí khôn của ta đây. Này là danh sách các đối
+        tượng Sentence. Mỗi khi mà có thông tin mới thì một Sentence nó sẽ được thêm vào KB.
+        """
+        self.knowledge = []                                 # Chứa các đối tượng Sentence - Chưa có tri thức mới được thêm vào
 
     def mark_mine(self, cell):
         """
@@ -196,12 +226,16 @@ class MinesweeperAI():
                if they can be inferred from existing knowledge
         """
 
+        # Ghi nhận bước đi: đánh dấu ô cell vừa bấm là đã đi, rồi đánh dấu các ô đó là an toàn
         self.moves_made.add(cell)
         self.mark_safe(cell)
         
         new_knowledge_cells = []
 
-        # Loop over 3x3 cells and appending untouched cells to new_knowledge_cells
+        # Loop over 3x3 cells and appending untouched cells to new_knowledge_cells:
+            # Quét tất cả 8 ô xung quanh cell. hỉ quan tâm đến những ô hàng xóm mà nó chưa biết gì về
+            # (tức là những ô chưa được bấm và chưa được xác định là an toàn)
+            # Những ô này được thu thập vào một danh sách tên là new_knowledge_cells
         for i in range(cell[0] - 1, cell[0] + 2):
             for j in range(cell[1] - 1, cell[1] + 2):
 
@@ -215,8 +249,12 @@ class MinesweeperAI():
                         new_knowledge_cells.append((i,j))
 
         # Appending the new Knowledge
+        # Tạo ra đối tượng Sentence
+        # Đối tượng Sentence: {tập hợp các hàng xóm bí ẩn} = count
+        # count là số mìn xung quanh ô cell
+        # Mệnh đề này được thêm vào cơ sở tri thức self.knowledge. AI vừa học được một quy tắc mới
         if len(new_knowledge_cells) != 0:
-            self.knowledge.append(Sentence(new_knowledge_cells,count))
+            self.knowledge.append(Sentence(new_knowledge_cells, count))
 
         while self.minify_knowledgebase() != self.knowledge:
             pass
@@ -261,14 +299,20 @@ class MinesweeperAI():
             2) are not known to be mines
         """
 
+        """
+            Chỉ di chuyển vào các ô mà chưa đi và các ô chưa biết là mìn
+        """
         freeSets = self.all_possible_cells - self.moves_made - self.mines
+
+        
         if len(freeSets) > 0:
             return random.choice(tuple(freeSets))
         else:
             return None
 
     def minify_knowledgebase(self):
-        knowledge_to_iterate = self.knowledge.copy()
+        knowledge_to_iterate = self.knowledge.copy()        # Tạo một bản sao của self.knowledge để duyệt qua. Điều này rất quan trọng vì phương thức sẽ xóa các phần tử khỏi self.knowledge gốc ngay trong vòng lặp.
+                                                                # Việc duyệt trên một bản sao sẽ tránh gây ra lỗi.
 
         for sentence in knowledge_to_iterate:
             known_safes = sentence.known_safes()            # Count = 0 thêm các cells vào trong known_safes, count ≠ 0 thì trả None
@@ -276,7 +320,7 @@ class MinesweeperAI():
             
             if known_safes:                                 # Không none thì update safes
                 self.safes.update(known_safes)
-                self.knowledge.remove(sentence)             #
+                self.knowledge.remove(sentence)
 
             if known_mines:
                 self.knowledge.remove(sentence)
