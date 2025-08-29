@@ -17,21 +17,16 @@ def run_experiment(num_games=1000, height=8, width=8, mines=8):
     start_time = time.time()
 
     for i in range(num_games):
-        # Tạo game và AI agent mới cho mỗi ván
         game = Minesweeper(height=height, width=width, mines=mines)
         ai = MinesweeperAI(height=height, width=width)
 
-        # Biến flags sẽ được cập nhật từ kiến thức của AI
         flags = set()
 
-        # Vòng lặp chính của một ván game
         while True:
-            # Kiểm tra điều kiện thắng trước tiên
             if game.mines == flags:
                 wins += 1
                 break
 
-            # Gọi hàm điều phối duy nhất của AI để quyết định nước đi
             move = ai.decide_move()
 
             """
@@ -50,11 +45,9 @@ def run_experiment(num_games=1000, height=8, width=8, mines=8):
             if game.is_mine(move):
                 losses += 1
                 break
-            # Nếu đi vào ô an toàn -> cập nhật tri thức
             else:
                 nearby = game.nearby_mines(move)
                 ai.add_knowledge(move, nearby)
-                # Cập nhật cờ từ kiến thức mới nhất của AI
                 flags = ai.getFlags()
 
     end_time = time.time()

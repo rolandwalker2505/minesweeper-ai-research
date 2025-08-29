@@ -64,4 +64,4 @@ def run_experiment(num_games=1000, height=8, width=8, mines=8):
 
 
 if __name__ == "__main__":
-    run_experiment(num_games=2000, height=HEIGHT, width=WIDTH, mines=MINES)
+    run_experiment(num_games=1000, height=HEIGHT, width=WIDTH, mines=MINES)
