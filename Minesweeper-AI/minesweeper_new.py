@@ -378,31 +378,31 @@ class MinesweeperAI():
 
     def decide_move(self):
         """
-        Quyết định nước đi tiếp theo dựa trên chính sách 3 bậc.
-        1. Ưu tiên nước đi chắc chắn an toàn.
-        2. Nếu không có, ưu tiên nước đi có xác suất là mìn thấp nhất.
-        3. Nếu vẫn không có, thực hiện nước đi ngẫu nhiên.
+        Quyết định nước đi tiếp theo dựa trên 3 bậc ưu tiên.
+        - Ưu tiên nước đi chắc chắn an toàn.
+        - Nếu không có, ưu tiên nước đi có xác suất là mìn thấp nhất.
+        - Nếu vẫn không có, thực hiện nước đi ngẫu nhiên.
         """
 
-        # Ưu tiên 1: Tìm nước đi chắc chắn an toàn
+        # Tìm nước đi chắc chắn an toàn
         move = self.make_safe_move()
         if move:
             print("AI making safe move.")
             return move
 
-        # Ưu tiên 2: Tìm nước đi có rủi ro thấp nhất (suy luận xác suất)
+        # Tìm nước đi có rủi ro thấp nhất, là sẽ suy luận xác suất nước nào ngon thì đi nước đó
         move = self.make_probabilistic_move()
         if move:
             print("No known safe moves, AI making probabilistic move.")
             return move
 
-        # Ưu tiên 3: Nước đi ngẫu nhiên như giải pháp cuối cùng
+        # Nước đi ngẫu nhiên là giải pháp cuối cùng
         move = self.make_random_move()
         if move:
             print("No logical/probabilistic moves, AI making random move.")
             return move
 
-        # Không còn nước đi nào
+        # Không còn nước đi nào khác thì sẽ để trống
         print("No moves left to make.")
         return None
 

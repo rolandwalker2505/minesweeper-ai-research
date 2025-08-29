@@ -182,7 +182,8 @@ while True:
         # If AI button clicked, make an AI move
 
         if aiButton.collidepoint(mouse) and not lost:
-            # Gọi hàm điều phối duy nhất của AI
+            # Giờ nó sẽ chạy cái này là cái duy nhất, trong đó nó có 3 cách đi: cách đi an toàn, cách đi theo xác suất
+                # và cuối cùng là cách đi ngẫu nhiên không theo quy luật gì hết
             move = ai.decide_move()
 
             # Cập nhật cờ từ kiến thức của AI (nếu có)
