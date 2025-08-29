@@ -276,6 +276,72 @@ class MinesweeperAI():
         print(self.mines)
         print("------------------------------------------------------------------")
 
+    def make_probabilistic_move(self):
+        """
+        Trả về nước đi an toàn nhất dựa trên suy luận xác suất.
+
+        Tính toán xác suất là mìn cho mỗi ô trong các mệnh đề hiện có
+        và trả về ô có xác suất là mìn thấp nhất.
+        """
+
+        # Nếu không có kiến thức nào thì không thể suy luận xác suất
+        if not self.knowledge:
+            return None
+
+        # Bước 1: Khởi tạo bộ đếm cho các ô "biên giới" (ô chưa biết trong KB)
+        mine_counts = {}  # Đếm số "thế giới" mà một ô là mìn
+        total_models = {}  # Đếm tổng số "thế giới" mà một ô xuất hiện
+
+        # Bước 2: Duyệt qua từng mệnh đề để xây dựng các "thế giới" khả dĩ
+        for sentence in self.knowledge:
+            # Bỏ qua các mệnh đề đã được giải quyết (tránh chia cho 0)
+            if not sentence.cells:
+                continue
+
+            num_mines = sentence.count
+            cells = sentence.cells
+
+            # Tìm tất cả các cách sắp xếp 'num_mines' quả mìn vào các ô trong 'cells'
+            # Đây chính là các "thế giới" khả dĩ cho mệnh đề này
+            possible_mine_placements = itertools.combinations(cells, num_mines)
+
+            num_models = 0
+            for placement in possible_mine_placements:
+                num_models += 1
+                # Với mỗi cách sắp xếp (mô hình/thế giới), cập nhật bộ đếm
+                for cell in cells:
+                    # Khởi tạo nếu ô chưa có trong bộ đếm
+                    if cell not in mine_counts:
+                        mine_counts[cell] = 0
+                        total_models[cell] = 0
+
+                    # Nếu ô này là mìn trong thế giới hiện tại, tăng bộ đếm mìn
+                    if cell in placement:
+                        mine_counts[cell] += 1
+
+                    # Tăng tổng số mô hình mà ô này có tham gia
+                    total_models[cell] += 1
+
+        # Bước 3: Tính toán xác suất và tìm ô tốt nhất
+        best_move = None
+        lowest_prob = 1.0  # Bắt đầu với xác suất cao nhất là 100%
+
+        for cell, total in total_models.items():
+            if total > 0:
+                probability = mine_counts[cell] / total
+                # Tìm ô có xác suất là mìn thấp nhất và chưa từng đi
+                if probability < lowest_prob and cell not in self.moves_made:
+                    lowest_prob = probability
+                    best_move = cell
+
+        # Chỉ trả về nước đi nếu nó có rủi ro thấp (ví dụ dưới 50%)
+        # Bạn có thể điều chỉnh ngưỡng này
+        if best_move and lowest_prob < 0.5:
+            print(f"Probabilistic move found: {best_move} with P(mine)={lowest_prob:.2f}")
+            return best_move
+
+        return None
+
     def make_safe_move(self):
         """
         Returns a safe cell to choose on the Minesweeper board.
@@ -309,6 +375,36 @@ class MinesweeperAI():
             return random.choice(tuple(freeSets))
         else:
             return None
+
+    def decide_move(self):
+        """
+        Quyết định nước đi tiếp theo dựa trên chính sách 3 bậc.
+        1. Ưu tiên nước đi chắc chắn an toàn.
+        2. Nếu không có, ưu tiên nước đi có xác suất là mìn thấp nhất.
+        3. Nếu vẫn không có, thực hiện nước đi ngẫu nhiên.
+        """
+
+        # Ưu tiên 1: Tìm nước đi chắc chắn an toàn
+        move = self.make_safe_move()
+        if move:
+            print("AI making safe move.")
+            return move
+
+        # Ưu tiên 2: Tìm nước đi có rủi ro thấp nhất (suy luận xác suất)
+        move = self.make_probabilistic_move()
+        if move:
+            print("No known safe moves, AI making probabilistic move.")
+            return move
+
+        # Ưu tiên 3: Nước đi ngẫu nhiên như giải pháp cuối cùng
+        move = self.make_random_move()
+        if move:
+            print("No logical/probabilistic moves, AI making random move.")
+            return move
+
+        # Không còn nước đi nào
+        print("No moves left to make.")
+        return None
 
     def minify_knowledgebase(self):
         knowledge_to_iterate = self.knowledge.copy()        # Tạo một bản sao của self.knowledge để duyệt qua. Điều này rất quan trọng vì phương thức sẽ xóa các phần tử khỏi self.knowledge gốc ngay trong vòng lặp.
