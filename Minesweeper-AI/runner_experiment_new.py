@@ -29,19 +29,10 @@ def run_experiment(num_games=1000, height=8, width=8, mines=8):
 
             move = ai.decide_move()
 
-            """
-                Xử lý khi không còn nước đi nào
-                Nếu AI trả về None, tức là nó không thể đi được nữa.
-                Vì đã kiểm tra thắng ở trên, nên nếu tới đây, ta tính là thua.
-            """
             if move is None:
                 losses += 1
                 break
 
-            """
-                Xử lý nước đi
-                Nếu đi vào mìn -> thua
-            """
             if game.is_mine(move):
                 losses += 1
                 break
@@ -59,7 +50,7 @@ def run_experiment(num_games=1000, height=8, width=8, mines=8):
     print(f"Losses: {losses}")
     win_rate = (wins / num_games) * 100
     print(f"Win rate: {win_rate:.2f}%")
-    print(f"Total time: {total_time:.2f} giây")
+    print(f"Total time: {total_time:.2f}s")
 
     return wins, losses, win_rate
 

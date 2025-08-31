@@ -17,11 +17,9 @@ def run_experiment(num_games=1000, height=8, width=8, mines=8):
     start_time = time.time()
 
     for i in range(num_games):
-        # Tạo game và AI agent mới cho mỗi ván
         game = Minesweeper(height=height, width=width, mines=mines)
         ai = MinesweeperAI(height=height, width=width)
 
-        revealed = set()
         flags = set()
 
         while True:
@@ -45,7 +43,6 @@ def run_experiment(num_games=1000, height=8, width=8, mines=8):
                 break
             else:
                 nearby = game.nearby_mines(move)
-                revealed.add(move)
                 ai.add_knowledge(move, nearby)
                 flags = ai.getFlags()
 
@@ -58,7 +55,7 @@ def run_experiment(num_games=1000, height=8, width=8, mines=8):
     print(f"Losses: {losses}")
     win_rate = (wins / num_games) * 100
     print(f"Win rate: {win_rate:.2f}%")
-    print(f"Total time: {total_time:.2f} giây")
+    print(f"Total time: {total_time:.2f}s")
 
     return wins, losses, win_rate
 
