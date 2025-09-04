@@ -5,7 +5,6 @@ import statistics
 from minesweeper_new import Minesweeper, MinesweeperAI as MinesweeperAIHybrid
 from old.minesweeper import MinesweeperAI as MinesweeperAIBase
 
-
 def play_one_game(ai_class, height, width, mines):
     game = Minesweeper(height=height, width=width, mines=mines)
     ai = ai_class(height=height, width=width)
@@ -45,8 +44,10 @@ def run_one_paired_trial(trial_num, num_games, height, width, mines):
 
     start_time_base = time.time()
     for i in range(num_games):
-        seed = f"trial_{trial_num}_game_{i}"
-        random.seed(seed)
+        # seed = f"trial_{trial_num}_game_{i}"
+        # random.seed(seed)
+        random_seed = random.randint(0, 9999)
+        random.seed(random_seed)
         if play_one_game(MinesweeperAIBase, height, width, mines) == "win":
             wins_base += 1
 
@@ -55,8 +56,10 @@ def run_one_paired_trial(trial_num, num_games, height, width, mines):
 
     start_time_hybrid = time.time()
     for i in range(num_games):
-        seed = f"trial_{trial_num}_game_{i}"
-        random.seed(seed)
+        # seed = f"trial_{trial_num}_game_{i}"
+        # random.seed(seed)
+        random_seed = random.randint(0, 9999)
+        random.seed(random_seed)
         if play_one_game(MinesweeperAIHybrid, height, width, mines) == "win":
             wins_hybrid += 1
     end_time_hybrid = time.time()
